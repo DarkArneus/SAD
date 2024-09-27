@@ -12,18 +12,30 @@ class EditableBufferedReader extends BufferedReader{
   }
 
   public static void setRaw() throws IOException{
-    String[] cmd = {"/bin/sh", "-c", "stty -echo raw </dev/tty"};
-    Runtime.getRuntime().exec(cmd);
+    try{
+      String[] cmd = {"/bin/sh", "-c", "stty -echo raw </dev/tty"};
+      Runtime.getRuntime().exec(cmd);
+    }catch(Exception e){
+      System.out.println("Error setRaw")
+    }
   }
 
   public static void unsetRaw() throws IOException{
-    String[] cmd = {"/bin/sh", "-c", "stty -echo cooked </dev/tty"};
-    Runtime.getRuntime().exec(cmd);
+    try{
+      String[] cmd = {"/bin/sh", "-c", "stty -echo cooked </dev/tty"};
+      Runtime.getRuntime().exec(cmd);
+    }catch(Exception e){
+      System.out.println("Error unsetRaw");
+    }
   }
   @Override
   public int read(){
     int cha = 0;
-    cha = super.read(); // leemos caracter
+    try {
+      cha = super.read();// leemos caracter
+    } catch (IOException e) {
+      e.printStackTrace();
+    } 
 
     while(cha != ESC){
       return cha;
