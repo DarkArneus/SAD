@@ -25,8 +25,11 @@ class EditableBufferedReader extends BufferedReader {
   static final int INS_RET = -6;
   static final int BKSP_RET = -7;
 
+  private Line line;
+
   EditableBufferedReader(InputStreamReader in) {
     super(in);
+    line = new Line();
     // TODO Auto-generated constructor stub
   }
 
@@ -116,9 +119,11 @@ class EditableBufferedReader extends BufferedReader {
       lectura = this.read();
       switch (lectura) {
         case LEFT_RET:
+          line.moveCursorLeft();
           System.out.print("\033[D"); // Usamos la escape sequence para movernos a la izquierda \033 es ESC
         break;
         case RIGHT_RET:
+          line.moveCursorRight();
           System.out.print("\033[C"); // Usamos la escape sequence para movernos a la derecha
         break;
         case HOME_RET:
@@ -135,10 +140,13 @@ class EditableBufferedReader extends BufferedReader {
           System.out.print("\033[P");
         break;
         case BKSP_RET:
-          System.out.print("");
+          line.deleteCharBefore();
+          line.displayLine(this.line);
         break;
         default:
-          System.out.print((char) lectura); // Si no es ningun caracter especial printeamos la tecla directamente con un cast a char
+          line.insertChar((char) lectura);
+          line.displayLine(this.line);
+          //System.out.print((char) lectura); // Si no es ningun caracter especial printeamos la tecla directamente con un cast a char
       }
     }
 
