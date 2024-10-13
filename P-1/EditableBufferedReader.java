@@ -13,9 +13,10 @@ class EditableBufferedReader extends BufferedReader {
   static final int HOME = 72; // ^[[H H es 72 en ascii
   static final int END = 70;
   static final int SUPR = 51; // ^[[3~ --> puede afectar a la escalabilidad ya que ^[[3J tiene funcionalidades como borrar toda la consola y habria que hacer mas distinciones y parsear mejor
-                              // si queremos en un futuro añadir mas funcionalidades como por ejemplo tiene VIM.
+                              // si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene VIM.
   static final int INS = 50;   // ^[[2~
-  static final int BKSP = 127;  // 
+  static final int BKSP_1 = 8; // 
+  static final int BKSP_2 = 127;
 
   static final int LEFT_RET = -1; // como ascii no tiene valores negativos vamos a usarlos para nuestros caracteres especiales 
   static final int RIGHT_RET = -2;
@@ -94,11 +95,14 @@ class EditableBufferedReader extends BufferedReader {
               return INS_RET;
             case SUPR:
               return SUPR_RET;
-            case BKSP:
+            case BKSP_1:
+            case BKSP_2:
               return BKSP_RET;
 
           }
         }
+      }else if (cha == BKSP_1 || cha == BKSP_2) {
+        return BKSP_RET;
       }
 
     } catch (IOException e) {
@@ -124,12 +128,15 @@ class EditableBufferedReader extends BufferedReader {
         break;
         case RIGHT_RET:
           line.moveCursorRight();
-          System.out.print("\033[C"); // Usamos la escape sequence para movernos a la derecha
+          //System.out.print("\033[C"); // Usamos la escape sequence para movernos a la derecha
+          line.displayLine();
         break;
         case HOME_RET:
+          line.moveCursorHome();
           System.out.print("\033[H");
         break;
         case END_RET:
+          line.moveCursorEnd();
           System.out.print("\033[F");
         break;
         case INS_RET:
@@ -141,11 +148,11 @@ class EditableBufferedReader extends BufferedReader {
         break;
         case BKSP_RET:
           line.deleteCharBefore();
-          line.displayLine(this.line);
+          line.displayLine();
         break;
         default:
           line.insertChar((char) lectura);
-          line.displayLine(this.line);
+          line.displayLine();
           //System.out.print((char) lectura); // Si no es ningun caracter especial printeamos la tecla directamente con un cast a char
       }
     }
@@ -153,6 +160,6 @@ class EditableBufferedReader extends BufferedReader {
     EditableBufferedReader.unsetRaw(); // quitamos modo raw para volver al estado normal de la terminal
     System.out.println("finish");
 
-    return null;
+    return line.getText();
   }
 }
