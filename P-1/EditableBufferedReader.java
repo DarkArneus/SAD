@@ -11,14 +11,18 @@ class EditableBufferedReader extends BufferedReader {
   static final int LEFT = 68; // escape sequence de la flecha izq ^[[D D en ascii es 68
   static final int RIGHT = 67;
   static final int HOME = 72; // ^[[H H es 72 en ascii
-  static final int END = 70;  // ^[F
-  static final int SUPR = 51; // ^[[3~ --> puede afectar a la escalabilidad ya que ^[[3J tiene funcionalidades como borrar toda la consola y habria que hacer mas distinciones y parsear mejor
-                              // si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene VIM.
-  static final int INS = 50;   // ^[[2~
-  static final int BKSP_1 = 8; // 
+  static final int END = 70; // ^[F
+  static final int SUPR = 51; // ^[[3~ --> puede afectar a la escalabilidad ya que ^[[3J tiene funcionalidades
+                              // como borrar toda la consola y habria que hacer mas distinciones y parsear
+                              // mejor
+                              // si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene
+                              // VIM.
+  static final int INS = 50; // ^[[2~
+  static final int BKSP_1 = 8; //
   static final int BKSP_2 = 127;
 
-  static final int LEFT_RET = -1; // como ascii no tiene valores negativos vamos a usarlos para nuestros caracteres especiales 
+  static final int LEFT_RET = -1; // como ascii no tiene valores negativos vamos a usarlos para nuestros
+                                  // caracteres especiales
   static final int RIGHT_RET = -2;
   static final int HOME_RET = -3;
   static final int END_RET = -4;
@@ -31,19 +35,9 @@ class EditableBufferedReader extends BufferedReader {
   EditableBufferedReader(InputStreamReader in) {
     super(in);
     line = new Line();
-    // TODO Auto-generated constructor stub
   }
 
   public static void setRaw() throws IOException {
-    /*
-     * try{
-     * String[] cmd = {"/bin/sh", "-c", "stty -echo raw -echo </dev/tty"};
-     * Runtime.getRuntime().exec(cmd);
-     * }catch(Exception e){
-     * System.out.println("Error setRaw");
-     * }
-     */
-
     try {
       ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", "stty raw -echo </dev/tty");
       pb.start();
@@ -54,16 +48,6 @@ class EditableBufferedReader extends BufferedReader {
   }
 
   public static void unsetRaw() throws IOException {
-    /*
-     * try{
-     * String[] cmd = {"/bin/sh", "-c", "stty cooked echo </dev/tty"};
-     * Runtime.getRuntime().exec(cmd);
-     * }catch(Exception e){
-     * System.out.print("Error unsetRaw");
-     * }
-     */
-    // hem decidit canviar Runtime.getRuntime().exec() per ProcessBuilder ja que te
-    // mes funcionalitats i tracta el I/O de forma mes segura
     try {
       ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", "stty cooked echo </dev/tty");
       pb.start();
@@ -78,7 +62,7 @@ class EditableBufferedReader extends BufferedReader {
     int cha = 0;
     try {
       cha = super.read();// leemos caracter
-      if (cha == ESC) { 
+      if (cha == ESC) {
         cha = super.read();
         if (cha == CORCHETE) {
           cha = super.read();
@@ -99,7 +83,7 @@ class EditableBufferedReader extends BufferedReader {
               return SUPR_RET;
           }
         }
-      }else if (cha == BKSP_1 || cha == BKSP_2) {
+      } else if (cha == BKSP_1 || cha == BKSP_2) {
         return BKSP_RET;
       }
 
@@ -124,59 +108,40 @@ class EditableBufferedReader extends BufferedReader {
       switch (lectura) {
         case LEFT_RET:
           line.moveCursorLeft();
-          //System.out.print("\033[D"); // Usamos la escape sequence para movernos a la izquierda \033 es ESC
           line.displayLine();
-        break;
+          break;
         case RIGHT_RET:
           line.moveCursorRight();
-          //System.out.print("\033[C"); // Usamos la escape sequence para movernos a la derecha
           line.displayLine();
-        break;
+          break;
         case HOME_RET:
           line.moveCursorHome();
-          //System.out.print("\033[H");
           line.displayLine();
-        break;
+          break;
         case END_RET:
           line.moveCursorEnd();
-          //System.out.print("\033[F");
           line.displayLine();
-        break;
+          break;
         case INS_RET:
           line.setInsert();
-          if(line.getInsert()){
-            System.out.print("\033[4 q");
-          }else{
-            System.out.print("\033[0 q");
-            }
-        break;
+          break;
         case SUPR_RET:
           line.moveCursorRight();
           line.deleteCharBefore();
           line.displayLine();
-          //System.out.print("\033[C");
-          //System.out.print("\033[P");
-        break;
+          break;
         case BKSP_RET:
           line.deleteCharBefore();
           line.displayLine();
-          //System.out.print("\033[D");
-          //System.out.print("\033[P");
-        break;
+          break;
         default:
-        if(line.getInsert()){
-          if(line.getCursorPosition() != line.getText().length()){
-            line.moveCursorRight();
-            line.deleteCharBefore();
-          }
+          if (line.getInsert())
+            if (line.getCursorPosition() != line.getText().length()) {
+              line.moveCursorRight();
+              line.deleteCharBefore();
+            }
           line.insertChar((char) lectura);
           line.displayLine();
-          
-        }else{
-          line.insertChar((char) lectura);
-          line.displayLine();
-          //System.out.print((char) lectura); // Si no es ningun caracter especial printeamos la tecla directamente con un cast a char
-        }
       }
     }
     EditableBufferedReader.unsetRaw(); // quitamos modo raw para volver al estado normal de la terminal
