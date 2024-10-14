@@ -21,9 +21,9 @@ public class Line {
     public void setInsert() {
         insert = !insert;
         if (insert)
-            System.out.print("\033[4 q");
+            System.out.print("\033[4 q"); //ficar cursor underline
         else
-            System.out.print("\033[0 q");
+            System.out.print("\033[0 q"); //ficar cursor normal
     }
 
     // Esborra caracter esquerra del cursor

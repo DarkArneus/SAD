@@ -14,11 +14,9 @@ class EditableBufferedReader extends BufferedReader {
   static final int END = 70; // ^[F
   static final int SUPR = 51; // ^[[3~ --> puede afectar a la escalabilidad ya que ^[[3J tiene funcionalidades
                               // como borrar toda la consola y habria que hacer mas distinciones y parsear
-                              // mejor
-                              // si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene
-                              // VIM.
+                              // mejor si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene VIM.
   static final int INS = 50; // ^[[2~
-  static final int BKSP_1 = 8; //
+  static final int BKSP_1 = 8; // depende del ordenador es un valor u otro (8,127)
   static final int BKSP_2 = 127;
 
   static final int LEFT_RET = -1; // como ascii no tiene valores negativos vamos a usarlos para nuestros
