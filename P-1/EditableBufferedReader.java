@@ -11,7 +11,7 @@ class EditableBufferedReader extends BufferedReader {
   static final int LEFT = 68; // escape sequence de la flecha izq ^[[D D en ascii es 68
   static final int RIGHT = 67;
   static final int HOME = 72; // ^[[H H es 72 en ascii
-  static final int END = 70;
+  static final int END = 70;  // ^[F
   static final int SUPR = 51; // ^[[3~ --> puede afectar a la escalabilidad ya que ^[[3J tiene funcionalidades como borrar toda la consola y habria que hacer mas distinciones y parsear mejor
                               // si queremos en un futuro aÃ±adir mas funcionalidades como por ejemplo tiene VIM.
   static final int INS = 50;   // ^[[2~
@@ -92,13 +92,11 @@ class EditableBufferedReader extends BufferedReader {
             case END:
               return END_RET;
             case INS:
+              super.read();
               return INS_RET;
             case SUPR:
+              super.read();
               return SUPR_RET;
-            case BKSP_1:
-            case BKSP_2:
-              return BKSP_RET;
-
           }
         }
       }else if (cha == BKSP_1 || cha == BKSP_2) {
@@ -117,14 +115,17 @@ class EditableBufferedReader extends BufferedReader {
     int lectura = 0;
 
     EditableBufferedReader.setRaw(); // entramos en modo raw que es el modo en el que operaremos en la terminal
-
     lectura = this.read();
+    line.insertChar((char) lectura);
+    line.displayLine();
+
     while (lectura != ENTER) {
       lectura = this.read();
       switch (lectura) {
         case LEFT_RET:
           line.moveCursorLeft();
-          System.out.print("\033[D"); // Usamos la escape sequence para movernos a la izquierda \033 es ESC
+          //System.out.print("\033[D"); // Usamos la escape sequence para movernos a la izquierda \033 es ESC
+          line.displayLine();
         break;
         case RIGHT_RET:
           line.moveCursorRight();
@@ -133,33 +134,52 @@ class EditableBufferedReader extends BufferedReader {
         break;
         case HOME_RET:
           line.moveCursorHome();
-          System.out.print("\033[H");
+          //System.out.print("\033[H");
+          line.displayLine();
         break;
         case END_RET:
           line.moveCursorEnd();
-          System.out.print("\033[F");
+          //System.out.print("\033[F");
+          line.displayLine();
         break;
         case INS_RET:
-          System.out.print("");
+          line.setInsert();
+          if(line.getInsert()){
+            System.out.print("\033[4 q");
+          }else{
+            System.out.print("\033[0 q");
+            }
         break;
         case SUPR_RET:
-          System.out.print("\033[C");
-          System.out.print("\033[P");
+          line.moveCursorRight();
+          line.deleteCharBefore();
+          line.displayLine();
+          //System.out.print("\033[C");
+          //System.out.print("\033[P");
         break;
         case BKSP_RET:
           line.deleteCharBefore();
           line.displayLine();
+          //System.out.print("\033[D");
+          //System.out.print("\033[P");
         break;
         default:
+        if(line.getInsert()){
+          if(line.getCursorPosition() != line.getText().length()){
+            line.moveCursorRight();
+            line.deleteCharBefore();
+          }
+          line.insertChar((char) lectura);
+          line.displayLine();
+          
+        }else{
           line.insertChar((char) lectura);
           line.displayLine();
           //System.out.print((char) lectura); // Si no es ningun caracter especial printeamos la tecla directamente con un cast a char
+        }
       }
     }
-
     EditableBufferedReader.unsetRaw(); // quitamos modo raw para volver al estado normal de la terminal
-    System.out.println("finish");
-
     return line.getText();
   }
 }
