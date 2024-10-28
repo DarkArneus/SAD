@@ -1,6 +1,10 @@
+package MVC.Controller;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import MVC.Model.*;
+import MVC.View.*;
 
 class EditableBufferedReader extends BufferedReader {
   static final int ENTER = 13;
@@ -28,8 +32,12 @@ class EditableBufferedReader extends BufferedReader {
   static final int INS_RET = -6;
   static final int BKSP_RET = -7;
 
+  private Line line;
+  private Console console;
+
   EditableBufferedReader(InputStreamReader in) {
     super(in);
+    line = new Line();
   }
 
   public static void setRaw() throws IOException {
@@ -90,25 +98,32 @@ class EditableBufferedReader extends BufferedReader {
 
   @Override
   public String readLine() throws IOException {
+    // Leemos el input
     int lectura = 0;
-    Line line = new Line();
-    System.out.flush();
 
     EditableBufferedReader.setRaw(); // entramos en modo raw que es el modo en el que operaremos en la terminal
-    
-    while ((lectura=this.read())!= ENTER) {
+    lectura = this.read();
+    line.insertChar((char) lectura);
+    line.displayLine();
+
+    while (lectura != ENTER) {
+      lectura = this.read();
       switch (lectura) {
         case LEFT_RET:
           line.moveCursorLeft();
+          line.displayLine();
           break;
         case RIGHT_RET:
           line.moveCursorRight();
+          line.displayLine();
           break;
         case HOME_RET:
           line.moveCursorHome();
+          line.displayLine();
           break;
         case END_RET:
           line.moveCursorEnd();
+          line.displayLine();
           break;
         case INS_RET:
           line.setInsert();
@@ -116,15 +131,23 @@ class EditableBufferedReader extends BufferedReader {
         case SUPR_RET:
           line.moveCursorRight();
           line.deleteCharBefore();
+          line.displayLine();
           break;
         case BKSP_RET:
           line.deleteCharBefore();
+          line.displayLine();
           break;
         default:
+          if (line.getInsert())
+            if (line.getCursorPosition() != line.getText().length()) {
+              line.moveCursorRight();
+              line.deleteCharBefore();
+            }
           line.insertChar((char) lectura);
+          console.displayLine(line);
       }
     }
     EditableBufferedReader.unsetRaw(); // quitamos modo raw para volver al estado normal de la terminal
-    return line.toString();
+    return line.getText();
   }
 }
