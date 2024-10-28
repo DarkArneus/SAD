@@ -1,10 +1,11 @@
-package MVC.Controller;
+package src.MVC.Controller;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import MVC.Model.*;
-import MVC.View.*;
+
+import src.MVC.Model.*;
+import src.MVC.View.*;
 
 class EditableBufferedReader extends BufferedReader {
   static final int ENTER = 13;
@@ -35,9 +36,10 @@ class EditableBufferedReader extends BufferedReader {
   private Line line;
   private Console console;
 
-  EditableBufferedReader(InputStreamReader in) {
+  EditableBufferedReader(InputStreamReader in, Line line, Console console) {
     super(in);
-    line = new Line();
+    this.line = line;
+    this.console = console;  
   }
 
   public static void setRaw() throws IOException {
@@ -100,30 +102,26 @@ class EditableBufferedReader extends BufferedReader {
   public String readLine() throws IOException {
     // Leemos el input
     int lectura = 0;
+    line = new Line();
 
     EditableBufferedReader.setRaw(); // entramos en modo raw que es el modo en el que operaremos en la terminal
     lectura = this.read();
     line.insertChar((char) lectura);
-    line.displayLine();
 
     while (lectura != ENTER) {
       lectura = this.read();
       switch (lectura) {
         case LEFT_RET:
           line.moveCursorLeft();
-          line.displayLine();
           break;
         case RIGHT_RET:
           line.moveCursorRight();
-          line.displayLine();
           break;
         case HOME_RET:
           line.moveCursorHome();
-          line.displayLine();
           break;
         case END_RET:
           line.moveCursorEnd();
-          line.displayLine();
           break;
         case INS_RET:
           line.setInsert();
@@ -131,11 +129,9 @@ class EditableBufferedReader extends BufferedReader {
         case SUPR_RET:
           line.moveCursorRight();
           line.deleteCharBefore();
-          line.displayLine();
           break;
         case BKSP_RET:
           line.deleteCharBefore();
-          line.displayLine();
           break;
         default:
           if (line.getInsert())

@@ -1,6 +1,9 @@
-package MVC.Model;
+package src.MVC.Model;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observer;
 import java.util.Observable;
 
@@ -18,6 +21,8 @@ public class Line extends Observable{
     public void insertChar(char ch) {
         line.insert(cursorPosition, ch);
         cursorPosition++;
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     public boolean getInsert() {
@@ -30,6 +35,8 @@ public class Line extends Observable{
             System.out.print("\033[4 q"); //ficar cursor underline
         else
             System.out.print("\033[0 q"); //ficar cursor normal
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // Esborra caracter esquerra del cursor
@@ -40,6 +47,9 @@ public class Line extends Observable{
         } else {
             System.out.print((char) 7); // valor ASCII bell sound
         }
+        
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // Moure cursor esquerra
@@ -49,6 +59,8 @@ public class Line extends Observable{
         } else {
             System.out.print((char) 7); // valor ASCII bell sound
         }
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // Moure cursor dreta
@@ -58,16 +70,22 @@ public class Line extends Observable{
         } else {
             System.out.print((char) 7); // valor ASCII bell sound
         }
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // Moure cursor principi de la linia
     public void moveCursorHome() {
         cursorPosition = 0;
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // Moure cursor final de la linia
     public void moveCursorEnd() {
         cursorPosition = line.length();
+        this.setChanged(); // Definimos el cambio
+        this.notifyObservers(line); // Notificamos el cambio
     }
 
     // get texte de line
