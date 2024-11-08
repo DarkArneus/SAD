@@ -135,12 +135,12 @@ class EditableBufferedReader extends BufferedReader {
           break;
         default:
           if (line.getInsert())
-            if (line.getCursorPosition() != line.getText().length()) {
-              line.moveCursorRight();
-              line.deleteCharBefore();
-            }
+               if (line.getInsert() && line.getCursorPosition() != line.getText().length()) {
+                    line.moveCursorRight();
+                    line.deleteCharBefore();
+                }
           line.insertChar((char) lectura);
-          console.displayLine(line);
+          //console.displayLine(line);
       }
     }
     EditableBufferedReader.unsetRaw(); // quitamos modo raw para volver al estado normal de la terminal

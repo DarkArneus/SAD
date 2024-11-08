@@ -29,6 +29,7 @@ public class Console implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Line) {
+            System.out.print("a");
             displayLine((Line) o);
         }
     }
