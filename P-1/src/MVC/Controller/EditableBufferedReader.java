@@ -33,13 +33,8 @@ class EditableBufferedReader extends BufferedReader {
   static final int INS_RET = -6;
   static final int BKSP_RET = -7;
 
-  private Line line;
-  private Console console;
-
-  EditableBufferedReader(InputStreamReader in, Line line, Console console) {
-    super(in);
-    this.line = line;
-    this.console = console;  
+  EditableBufferedReader(InputStreamReader in) {
+    super(in);  
   }
 
   public static void setRaw() throws IOException {
@@ -102,7 +97,8 @@ class EditableBufferedReader extends BufferedReader {
   public String readLine() throws IOException {
     // Leemos el input
     int lectura = 0;
-    line = new Line();
+    Line line = new Line();
+    Console console = new Console(line);
 
     EditableBufferedReader.setRaw(); // entramos en modo raw que es el modo en el que operaremos en la terminal
     lectura = this.read();

@@ -2,6 +2,7 @@ package src.MVC.Model;
 import java.util.Observer;
 import java.util.Observable;
 
+@SuppressWarnings("deprecation")
 public class Line extends Observable{
     private StringBuilder line; // linia de text
     private int cursorPosition; // posicio del cursor
