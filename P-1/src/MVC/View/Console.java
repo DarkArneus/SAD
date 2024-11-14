@@ -35,7 +35,7 @@ public class Console implements Observer {
     public void update(Observable o, Object arg) {
         if (o instanceof Line) {
             // Convertir el StringBuilder a String para mostrar
-            System.out.print("o");
+            //System.out.print("o");
             displayLine((Line) o);
         }
     }

@@ -33,8 +33,12 @@ class EditableBufferedReader extends BufferedReader {
   static final int INS_RET = -6;
   static final int BKSP_RET = -7;
 
-  EditableBufferedReader(InputStreamReader in) {
+  private Line line;
+  private Console console;
+  EditableBufferedReader(InputStreamReader in, Line line,Console console) {
     super(in);  
+    this.console = console;
+    this.line = line;
   }
 
   public static void setRaw() throws IOException {
