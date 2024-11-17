@@ -1,4 +1,5 @@
 import { LitElement, html } from "lit";
+import { apiKey } from './config.js';
 
 export class GetWeather extends LitElement {
   static properties = {
@@ -14,12 +15,11 @@ export class GetWeather extends LitElement {
     this.latitude = 41.3828939;
     this.longitude = 2.1774322;
     this.location = "Spain"
-    this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=b32a0681146f01d73550b84c4fd97f5c`;
-    this.url_gc = `http://api.openweathermap.org/geo/1.0/direct?q=${this.location}&limit=5&appid=b32a0681146f01d73550b84c4fd97f5c`;
+    this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}`;
+    this.url_gc = `http://api.openweathermap.org/geo/1.0/direct?q=${this.location}&limit=5&appid=${apiKey}`;
   }
 
-  // Escuchar el evento de actualización de ubicación
-  getWeather(){
+  getWeatherMap(){
     fetch(this.url_gc)
     .then(data => {return data.json()})
     .then(res =>{
@@ -30,21 +30,32 @@ export class GetWeather extends LitElement {
       } else {
         console.error("No results found for the location.");
       }
-      this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=b32a0681146f01d73550b84c4fd97f5c`;
+      this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}`;
+      
+    })
+    .then(() => this.getWeather())
+    
+  }
+
+  getWeather(){
+    fetch(this.url_oa)
+    .then(data => {return data.json()})
+    .then(res => {
+      console.log(this.url_oa)
+      console.log(res)
     })
   }
   
   changeUrl(event){
     const location = event.target;
     const f_location = location.value;
-    this.url_gc =  `http://api.openweathermap.org/geo/1.0/direct?q=${f_location}&limit=5&appid=b32a0681146f01d73550b84c4fd97f5c`
+    this.url_gc =  `http://api.openweathermap.org/geo/1.0/direct?q=${f_location}&limit=5&appid=${apiKey}`
   }
   render() {
     return html`
       <div> 
         <input @input=${this.changeUrl} placeholder="Enter location"></input>
-        <button @click=${this.getWeather}>Busca el tiempo</button>    
-        <p>${this.url_gc}</p>
+        <button @click=${this.getWeatherMap}>Busca el tiempo</button>    
         <p>${this.latitude}</p>
         <p>${this.longitude}</p>        
       </div>
