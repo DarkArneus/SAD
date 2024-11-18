@@ -1,73 +1,174 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { apiKey } from './config.js';
 
 export class GetWeather extends LitElement {
+  static styles = css`
+    /* Fondo general */
+    :host {
+      display: block;
+      background: linear-gradient(to bottom, #85c1e9, #2874a6);
+      color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 300px;
+      margin: auto;
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* Input field */
+    input {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    /* Botón */
+    button {
+      background-color: #3498db;
+      color: #ffffff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #21618c;
+      transform: scale(1.05);
+    }
+
+    /* Clima general */
+    .weather-container {
+      margin-top: 15px;
+    }
+
+    /* Icono del clima */
+    .weather-icon {
+      width: 80px;
+      height: 80px;
+      margin: 10px auto;
+    }
+
+    /* Descripción */
+    .description {
+      text-transform: capitalize;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* Temperatura */
+    .temperature {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    /* Detalles */
+    .details {
+      font-size: 14px;
+    }
+  `;
+
   static properties = {
     latitude: { type: Number },
     longitude: { type: Number },
     location: { type: String },
-    weatherDescription: { type: String },
-    cityName: { type: String },
-    temperature: { type: Number },
-    feelsLike: { type: Number },
+    weather: { type: Object },
+    errorMessage: { type: String },
   };
 
   constructor() {
     super();
-    this.latitude = 41.3828939;
+    this.latitude = 41.3828939; // Barcelona por defecto
     this.longitude = 2.1774322;
-    this.location = "Spain";
-    this.weatherDescription = "";
-    this.cityName = "";
-    this.temperature = 0;
-    this.feelsLike = 0;
-    this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}`;
-    this.url_gc = `http://api.openweathermap.org/geo/1.0/direct?q=${this.location}&limit=5&appid=${apiKey}`;
+    this.location = "Barcelona";
+    this.weather = null;
+    this.errorMessage = null;
   }
 
+  // Obtiene las coordenadas de la ubicación
   getWeatherMap() {
-    fetch(this.url_gc)
-      .then(data => data.json())
-      .then(res => {
+    fetch(
+      `http://api.openweathermap.org/geo/1.0/direct?q=${this.location}&limit=5&appid=${apiKey}`
+    )
+      .then((data) => data.json())
+      .then((res) => {
         if (res.length > 0) {
           this.latitude = res[0].lat;
           this.longitude = res[0].lon;
+          this.getWeather(); // Ahora busca el clima con las coordenadas
         } else {
-          console.error("No results found for the location.");
+          this.errorMessage = "No se encontraron resultados para la ubicación.";
+          this.weather = null;
         }
-        this.url_oa = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}`;
       })
-      .then(() => this.getWeather());
-  }
-
-  getWeather() {
-    fetch(this.url_oa)
-      .then(data => data.json())
-      .then(res => {
-        this.weatherDescription = res.weather[0].description;
-        this.cityName = res.name;
-        this.temperature = (res.main.temp - 273.15).toFixed(2); // Convert Kelvin to Celsius
-        this.feelsLike = (res.main.feels_like - 273.15).toFixed(2); // Convert Kelvin to Celsius
+      .catch((error) => {
+        this.errorMessage = `Error al obtener la geolocalización: ${error.message}`;
       });
   }
 
+  // Obtiene el clima
+  getWeather() {
+    fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}&units=metric`
+    )
+      .then((data) => data.json())
+      .then((res) => {
+        if (res.cod === 200) {
+          this.weather = res;
+          this.errorMessage = null;
+        } else {
+          this.errorMessage = `Error al obtener el clima: ${res.message}`;
+          this.weather = null;
+        }
+      })
+      .catch((error) => {
+        this.errorMessage = `Error al obtener el clima: ${error.message}`;
+      });
+  }
+
+  // Maneja el cambio de ubicación
   changeUrl(event) {
-    const location = event.target;
-    const f_location = location.value;
-    this.url_gc = `http://api.openweathermap.org/geo/1.0/direct?q=${f_location}&limit=5&appid=${apiKey}`;
+    this.location = event.target.value;
   }
 
   render() {
+    // https://openweathermap.org/weather-conditions#How-to-get-icon-URL
     return html`
-      <div> 
-        <input @input=${this.changeUrl} placeholder="Enter location"></input>
-        <button @click=${this.getWeatherMap}>Busca el tiempo</button>    
-        <p>Latitud: ${this.latitude}</p>
-        <p>Longitud: ${this.longitude}</p>        
-        <p>Ciudad: ${this.cityName}</p>
-        <p>Descripción del clima: ${this.weatherDescription}</p>
-        <p>Temperatura: ${this.temperature}°C</p>
-        <p>Sensación térmica: ${this.feelsLike}°C</p>
+      <div>
+        <input
+          @input=${this.changeUrl}
+          placeholder="Introduce una ubicación"
+        />
+        <button @click=${this.getWeatherMap}>Buscar el clima</button>
+
+        <div class="weather-container">
+          ${this.weather
+            ? html`
+                <img
+                  class="weather-icon"
+                  src="https://openweathermap.org/img/wn/${this.weather.weather[0].icon}@2x.png"
+                  alt="Icono del clima"
+                />
+                <div class="description">${this.weather.weather[0].description}</div>
+                <div class="temperature">${this.weather.main.temp}°C</div>
+                <div class="details">
+                  <p>Sensación térmica: ${this.weather.main.feels_like}°C</p>
+                  <p>Humedad: ${this.weather.main.humidity}%</p>
+                  <p>Viento: ${this.weather.wind.speed} m/s</p>
+                </div>
+              `
+            : this.errorMessage
+            ? html`<p style="color: red;">${this.errorMessage}</p>`
+            : html`<p>Introduce una ubicación para ver el clima.</p>`}
+        </div>
       </div>
     `;
   }
