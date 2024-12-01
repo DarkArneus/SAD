@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "lit";
-import { apiKey } from './config.js';
+import { apiKey } from '../utils/config.js';
 
 export class GetWeather extends LitElement {
   static styles = css`
@@ -82,6 +82,7 @@ export class GetWeather extends LitElement {
     location: { type: String },
     weather: { type: Object },
     errorMessage: { type: String },
+    webContent: {type: String},
   };
 
   constructor() {
@@ -91,6 +92,7 @@ export class GetWeather extends LitElement {
     this.location = "Barcelona";
     this.weather = null;
     this.errorMessage = null;
+    this.webContent = "<p> Hello everyone </p>"
   }
 
   // Obtiene las coordenadas de la ubicación
@@ -117,7 +119,7 @@ export class GetWeather extends LitElement {
   // Obtiene el clima
   getWeather() {
     fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}&units=metric&lang=es`
     )
       .then((data) => data.json())
       .then((res) => {
@@ -139,15 +141,37 @@ export class GetWeather extends LitElement {
     this.location = event.target.value;
   }
 
+  sendContentToTranslate() {
+    const event = new CustomEvent("language-selected", {
+      detail: {
+        language: this.shadowRoot.getElementById("language").value,
+        content: encodeURI(this.shadowRoot.innerHTML),
+      },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+  
+
   render() {
-    // https://openweathermap.org/weather-conditions#How-to-get-icon-URL
     return html`
       <div>
         <input
           @input=${this.changeUrl}
           placeholder="Introduce una ubicación"
         />
+        <div>
+          <label for="language">Selecciona un idioma:</label>
+          <select id="language">
+            <option value="en">Inglés</option>
+            <option value="es">Español</option>
+            <option value="fr">Francés</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
         <button @click=${this.getWeatherMap}>Buscar el clima</button>
+        <button @click=${this.sendContentToTranslate}>Traducir página</button>
 
         <div class="weather-container">
           ${this.weather

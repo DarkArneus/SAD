@@ -2,4 +2,4 @@
 *.c
 P-1/writeints/readints.java
 OpenWeatherApi/node_modules
-OpenWeatherApi/config.js
+OpenWeatherApi/src/utils/config.js

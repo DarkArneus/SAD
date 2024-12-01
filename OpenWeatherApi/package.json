@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bootstrap": "^5.3.3",
     "lit": "^3.2.1"
   },
   "name": "openweatherapi",
@@ -9,7 +10,7 @@
     "@web/dev-server": "^0.4.6"
   },
   "scripts": {
-    "start": "web-dev-server --node-resolve --open --watch"
+    "start": "web-dev-server --node-resolve --open --watch --root public"
   },
   "keywords": [],
   "author": "",

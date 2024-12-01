@@ -1,5 +1,4 @@
 package src.MVC.Model;
-import java.util.Observer;
 import java.util.Observable;
 
 @SuppressWarnings("deprecation")
