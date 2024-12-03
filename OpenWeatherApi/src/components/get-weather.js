@@ -1,6 +1,5 @@
 import { LitElement, html, css } from "lit";
 import { apiKey } from '../utils/config.js';
-import { unsafeHTML } from "lit/directives/unsafe-html.js"; 
 
 export class GetWeather extends LitElement {
   static styles = css`
@@ -96,8 +95,13 @@ export class GetWeather extends LitElement {
     this.webContent = ""
   }
 
+
   // Obtiene las coordenadas de la ubicación
   getWeatherMap() {
+    this.weather = null;
+    this.errorMessage = null;
+    this.webContent = "";
+    this.requestUpdate();
     fetch(
       `http://api.openweathermap.org/geo/1.0/direct?q=${this.location}&limit=5&appid=${apiKey}`
     )
@@ -119,6 +123,10 @@ export class GetWeather extends LitElement {
 
   // Obtiene el clima
   getWeather() {
+    this.weather = null;
+    this.errorMessage = null;
+    this.webContent = "";
+    this.requestUpdate();
     fetch(
       `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&appid=${apiKey}&units=metric&lang=es`
     )
@@ -166,65 +174,58 @@ export class GetWeather extends LitElement {
   }
 
   handleTranslation(event) {
-    const translatedHtml = decodeURIComponent(event.detail.content);
+    const translatedContent = event.detail.content;
   
-    // Parsear el HTML traducido
     const parser = new DOMParser();
-    const translatedDom = parser.parseFromString(translatedHtml, "text/html");
+    const translatedDocument = parser.parseFromString(translatedContent, "text/html");
   
-    // Actualizar los textos del clima
-    const descriptionText = translatedDom.querySelector(".description")?.textContent;
-    const temperatureText = translatedDom.querySelector(".temperature")?.textContent;
-    const detailsText = translatedDom.querySelector(".details")?.innerHTML;
+    const idsToTranslate = [
+      { id: "input-placeholder", type: "placeholder" },
+      { id: "language-label-content", type: "content" },
+      { id: "language-option-1", type: "content" },
+      { id: "language-option-2", type: "content" },
+      { id: "language-option-3", type: "content" },
+      { id: "language-option-4", type: "content" },
+      { id: "description-content", type:"content"},
+      { id: "getweather-button", type: "content" },
+      { id: "translate-button", type: "content" },
+      { id: "details-1", type: "content" },
+      { id: "details-2", type: "content" },
+      { id: "details-3", type: "content" },
+    ];
   
-    if (this.weather) {
-      const description = this.shadowRoot.querySelector(".description");
-      if (description) description.textContent = descriptionText;
+    idsToTranslate.forEach(({ id, type }) => {
+      const elementToTranslate = this.shadowRoot.getElementById(id);
+      const translatedElement = translatedDocument.getElementById(id);
   
-      const temperature = this.shadowRoot.querySelector(".temperature");
-      if (temperature) temperature.textContent = temperatureText;
-  
-      const details = this.shadowRoot.querySelector(".details");
-      if (details) details.innerHTML = detailsText;
-    }
-  
-    // Actualizar textos de botones y etiquetas
-    const inputPlaceholder = translatedDom.querySelector("input").placeholder;
-    const weatherButtonText = translatedDom.querySelector(".getweather")?.textContent;
-    const translateButtonText = translatedDom.querySelector(".translate")?.textContent;
-    const languageLabelText = translatedDom.querySelector("label[for='language']")?.textContent;
-  
-    const inputField = this.shadowRoot.querySelector("input");
-    if (inputField) inputField.placeholder = inputPlaceholder;
-  
-    const weatherButton = this.shadowRoot.querySelector(".getweather");
-    if (weatherButton) weatherButton.textContent = weatherButtonText;
-  
-    const translateButton = this.shadowRoot.querySelector(".translate");
-    if (translateButton) translateButton.textContent = translateButtonText;
-  
-    const label = this.shadowRoot.querySelector("label[for='language']");
-    if (label) label.textContent = languageLabelText;
+      if (elementToTranslate && translatedElement) {
+        if (type === "placeholder") {
+          elementToTranslate.placeholder = translatedElement.getAttribute("placeholder");
+        } else if (type === "content") {
+          elementToTranslate.innerHTML = translatedElement.innerHTML;
+        }
+      }
+    });
   }
 
   getDynamicHtml() {
     return html`
       <div>
-        <input
+        <input id="input-placeholder"
           @input=${this.changeUrl}
           placeholder="Introduce una ubicación"
         />
         <div>
-          <label for="language">Selecciona un idioma:</label>
+          <label id="language-label-content" for="language">Selecciona un idioma:</label>
           <select id="language">
-            <option value="en">Inglés</option>
-            <option value="es">Español</option>
-            <option value="fr">Francés</option>
-            <option value="it">Italiano</option>
+            <option id="language-option-1" value="en">Inglés</option>
+            <option id="language-option-2" value="es">Español</option>≤
+            <option id="language-option-3" value="fr">Francés</option>
+            <option id="language-option-4" value="it">Italiano</option>
           </select>
         </div>
-        <button @click=${this.getWeatherMap} class = getweather>Buscar el clima</button>
-        <button @click=${this.sendContentToTranslate} class = translate>
+        <button id="getweather-button" @click=${this.getWeatherMap} class = "getweather">Buscar el clima</button>
+        <button id="translate-button" @click=${this.sendContentToTranslate}>
           Traducir página
         </button>
 
@@ -236,14 +237,14 @@ export class GetWeather extends LitElement {
                   src="https://openweathermap.org/img/wn/${this.weather.weather[0].icon}@2x.png"
                   alt="Icono del clima"
                 />
-                <div class="description">
+                <div id="description-content" class="description">
                   ${this.weather.weather[0].description}
                 </div>
                 <div class="temperature">${this.weather.main.temp}°C</div>
                 <div class="details">
-                  <p>Sensación térmica: ${this.weather.main.feels_like}°C</p>
-                  <p>Humedad: ${this.weather.main.humidity}%</p>
-                  <p>Viento: ${this.weather.wind.speed} m/s</p>
+                  <p id="details-1">Sensación térmica: ${this.weather.main.feels_like}°C</p>
+                  <p id="details-2">Humedad: ${this.weather.main.humidity}%</p>
+                  <p id="details-3">Viento: ${this.weather.wind.speed} m/s</p>
                 </div>
               `
             : this.errorMessage
@@ -256,9 +257,7 @@ export class GetWeather extends LitElement {
 
   render() {
     return html`
-      ${this.webContent
-        ? html`${unsafeHTML(this.webContent)}`
-        : this.getDynamicHtml()}
+      ${this.getDynamicHtml()}
     `;
   }
 }
