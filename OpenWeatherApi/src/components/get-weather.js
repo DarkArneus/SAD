@@ -202,12 +202,11 @@ export class GetWeather extends LitElement {
         if (type === "placeholder") {
           elementToTranslate.placeholder = translatedElement.getAttribute("placeholder");
         } else if (type === "content") {
-          elementToTranslate.innerHTML = translatedElement.innerHTML;
+          elementToTranslate.innerHTML = translatedElement.innerHTML;       
         }
       }
     });
   }
-
   getDynamicHtml() {
     return html`
       <div>
